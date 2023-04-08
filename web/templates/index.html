@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="static/bootstrap.min.css" />
+	<title>Recognition of Road Sign
+	</title>
+</head>
+<center> 
+		<div style="border:3px double #FFFFFF; height: 638px; width: 95%  " >
+<body>
+<body style = "background: Black" /body>
+	<main class="container" >
+		<div class="mt-3" >
+		<font color="White">	
+
+		<h2 style="font-size:60px"class="fw-bold" align="Center"> RECOGNITION OF ROAD SIGN</h2>
+			<p style="text-decoration: underline; font-size:22px" align="Center" class="fw-bold">Web Application Prototype</p>
+			<p style="text-decoration: underline; position: absolute; bottom: 0; left: 0; width: 100%; text-align: center;">Team Valkyries</p>	
+		</font>
+		</div>
+		</style>
+		<form>
+			<input class="form-control" id="imageInput" type="file" name="image" />
+		</form>
+
+		<div class="my-2 text-center">
+			<img id="imagePreview" width="300" />
+			<div><code id="result" ></code></div>
+		</div>
+
+	</main>
+
+	<script type="text/javascript">
+			
+		var imageBase = undefined;
+		let imageInput = document.querySelector("#imageInput");
+		let textResult = document.querySelector("#result");
+
+		imageInput.addEventListener("change", function(){
+			let reader = new FileReader();
+			
+			reader.onload = function(e){
+				let dataURL = reader.result;
+
+				imageBase = dataURL.replace(`data:image/png;base64,`, "");
+				imageBase = imageBase.replace(`data:image/jpeg;base64,`, "");
+				imageBase = imageBase.replace(`data:image/jpg;base64,`, "");
+
+				let imagePreview = document.querySelector("#imagePreview");
+					imagePreview.setAttribute("src", dataURL);
+
+				textResult.innerHTML = "...";
+				fetch("/predict", {
+					method: "POST",
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ image: imageBase })
+				})
+				.then(res => res.json())
+				.then(res => {
+					var p = res.predictions[ res.prediction_classified ] * 100;
+					textResult.innerHTML = `Predicted: ${ res.prediction_classified_class } (${ p.toFixed(4) }%)`;
+				});
+			}
+
+			reader.readAsDataURL(imageInput.files[0]);
+		});
+
+	</script>
+</body>
+</html>
